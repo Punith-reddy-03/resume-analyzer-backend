@@ -18,7 +18,7 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/resumes")
-@CrossOrigin(origins = "http://localhost:3000")
+@CrossOrigin(origins = "*")  // ✅ Allow all origins (including Netlify)
 public class ResumeController {
     
     @Autowired
