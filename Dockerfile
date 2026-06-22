@@ -1,5 +1,5 @@
-# Use the official Eclipse Temurin image for Java 17
-FROM eclipse-temurin:17-jdk-slim
+# Use Amazon Corretto (widely available and reliable)
+FROM amazoncorretto:17-alpine
 
 WORKDIR /app
 
