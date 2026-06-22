@@ -1,4 +1,3 @@
-# Use Amazon Corretto (widely available and reliable)
 FROM amazoncorretto:17-alpine
 
 WORKDIR /app
@@ -7,6 +6,9 @@ WORKDIR /app
 COPY mvnw .
 COPY .mvn .mvn
 COPY pom.xml .
+
+# Make mvnw executable
+RUN chmod +x mvnw
 
 # Download dependencies
 RUN ./mvnw dependency:go-offline -B
