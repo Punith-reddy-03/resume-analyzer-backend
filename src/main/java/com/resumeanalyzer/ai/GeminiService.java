@@ -12,14 +12,14 @@ public class GeminiService {
     @Value("${gemini.api.key}")
     private String apiKey;
     
-    // Try gemini-2.5-flash (might have different quotas)
-    private final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=";
+    // ✅ Updated to use gemini-2.0-flash (widely available)
+    private final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=";
     
     public String analyzeResume(String resumeContent) {
         try {
             String url = GEMINI_URL + apiKey;
             
-            System.out.println("📡 Calling Gemini API with model: gemini-2.5-flash");
+            System.out.println("📡 Calling Gemini API with model: gemini-2.0-flash");
             
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
