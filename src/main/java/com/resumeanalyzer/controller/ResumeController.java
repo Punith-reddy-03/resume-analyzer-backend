@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.client.RestTemplate;
+import org.springframework.http.*;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -14,7 +16,7 @@ import org.apache.poi.xwpf.extractor.XWPFWordExtractor;
 import org.apache.poi.xwpf.usermodel.XWPFDocument;
 
 import java.io.InputStream;
-import java.util.List;
+import java.util.*;
 
 @RestController
 @RequestMapping("/api/resumes")
@@ -26,6 +28,32 @@ public class ResumeController {
     
     @Autowired
     private GeminiService geminiService;
+    
+    // ✅ NEW: Test Hugging Face connectivity
+    @GetMapping("/test-huggingface")
+    public ResponseEntity<String> testHuggingFace() {
+        try {
+            RestTemplate restTemplate = new RestTemplate();
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentType(MediaType.APPLICATION_JSON);
+            
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("inputs", "Hello, who are you?");
+            requestBody.put("parameters", Map.of("max_new_tokens", 20));
+            
+            HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
+            
+            ResponseEntity<String> response = restTemplate.postForEntity(
+                "https://api-inference.huggingface.co/models/google/flan-t5-base",
+                entity,
+                String.class
+            );
+            
+            return ResponseEntity.ok("✅ Hugging Face is reachable! Response: " + response.getBody());
+        } catch (Exception e) {
+            return ResponseEntity.status(500).body("❌ Error: " + e.getMessage());
+        }
+    }
     
     @PostMapping("/analyze")
     public ResponseEntity<?> analyzeResume(@RequestParam("file") MultipartFile file) {
