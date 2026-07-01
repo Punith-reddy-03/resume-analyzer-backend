@@ -8,8 +8,8 @@ import java.util.*;
 @Service
 public class GeminiService {
     
-    // ✅ FREE Hugging Face API - Higher limits than Gemini!
-    private final String HUGGING_FACE_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1";
+    // ✅ Using a stable and widely available Hugging Face model
+    private final String HUGGING_FACE_URL = "https://api-inference.huggingface.co/models/google/flan-t5-base";
     
     public String analyzeResume(String resumeContent) {
         try {
@@ -17,16 +17,12 @@ public class GeminiService {
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
             
-            String prompt = "You are an expert resume analyzer. Analyze this resume and provide:\n" +
-                           "1. Strengths (3-4 points)\n" +
-                           "2. Areas for improvement (3-4 points)\n" +
-                           "3. Overall score out of 100\n" +
-                           "4. Suggestions for improvement\n\n" +
-                           "Resume: " + resumeContent;
+            // Prompt engineered for the Flan-T5 model
+            String prompt = "Analyze this resume and provide: 1. Strengths (3-4 points), 2. Areas for improvement (3-4 points), 3. Overall score out of 100, 4. Suggestions for improvement.\n\nResume: " + resumeContent;
             
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("inputs", prompt);
-            requestBody.put("parameters", Map.of("max_new_tokens", 500));
+            requestBody.put("parameters", Map.of("max_new_tokens", 250));
             
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
             
