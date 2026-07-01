@@ -1,6 +1,5 @@
 package com.resumeanalyzer.ai;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.*;
@@ -9,27 +8,14 @@ import java.util.*;
 @Service
 public class GeminiService {
     
-    @Value("${gemini.api.key}")
-    private String apiKey;
-    
-    // ✅ Trying gemini-2.0-flash-lite
-    private final String GEMINI_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=";
+    // ✅ FREE Hugging Face API - Higher limits than Gemini!
+    private final String HUGGING_FACE_URL = "https://api-inference.huggingface.co/models/mistralai/Mistral-7B-Instruct-v0.1";
     
     public String analyzeResume(String resumeContent) {
         try {
-            String url = GEMINI_URL + apiKey;
-            
-            System.out.println("📡 Calling Gemini API with model: gemini-2.0-flash-lite");
-            
             RestTemplate restTemplate = new RestTemplate();
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
-            
-            Map<String, Object> requestBody = new HashMap<>();
-            List<Map<String, Object>> contents = new ArrayList<>();
-            Map<String, Object> content = new HashMap<>();
-            List<Map<String, Object>> parts = new ArrayList<>();
-            Map<String, Object> textPart = new HashMap<>();
             
             String prompt = "You are an expert resume analyzer. Analyze this resume and provide:\n" +
                            "1. Strengths (3-4 points)\n" +
@@ -38,36 +24,29 @@ public class GeminiService {
                            "4. Suggestions for improvement\n\n" +
                            "Resume: " + resumeContent;
             
-            textPart.put("text", prompt);
-            parts.add(textPart);
-            content.put("parts", parts);
-            contents.add(content);
-            requestBody.put("contents", contents);
+            Map<String, Object> requestBody = new HashMap<>();
+            requestBody.put("inputs", prompt);
+            requestBody.put("parameters", Map.of("max_new_tokens", 500));
             
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
             
-            ResponseEntity<Map> response = restTemplate.exchange(
-                url,
+            ResponseEntity<List> response = restTemplate.exchange(
+                HUGGING_FACE_URL,
                 HttpMethod.POST,
                 entity,
-                Map.class
+                List.class
             );
             
-            Map responseBody = response.getBody();
-            if (responseBody != null && responseBody.containsKey("candidates")) {
-                List candidates = (List) responseBody.get("candidates");
-                if (candidates != null && !candidates.isEmpty()) {
-                    Map firstCandidate = (Map) candidates.get(0);
-                    Map contentResponse = (Map) firstCandidate.get("content");
-                    List partsResponse = (List) contentResponse.get("parts");
-                    Map firstPart = (Map) partsResponse.get(0);
-                    String result = (String) firstPart.get("text");
-                    System.out.println("✅ Analysis completed successfully!");
-                    return result;
-                }
+            List responseBody = response.getBody();
+            if (responseBody != null && !responseBody.isEmpty()) {
+                Map firstResult = (Map) responseBody.get(0);
+                String generatedText = (String) firstResult.get("generated_text");
+                String analysis = generatedText.replace(prompt, "").trim();
+                System.out.println("✅ Analysis completed!");
+                return analysis;
             }
             
-            return "No analysis generated. Please check your API key.";
+            return "No analysis generated. Please try again.";
             
         } catch (Exception e) {
             e.printStackTrace();
