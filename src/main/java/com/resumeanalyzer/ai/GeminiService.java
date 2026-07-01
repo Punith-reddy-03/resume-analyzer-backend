@@ -9,9 +9,10 @@ import java.util.*;
 @Service
 public class GeminiService {
 
-    // ✅ Using Cohere Chat API (New version)
     private final String COHERE_URL = "https://api.cohere.ai/v1/chat";
-    private final String COHERE_API_KEY = "PVuiA9dqODLEgDAvjvqUDuB29Lw5Zn4E45o4QPLQ";
+    
+    // ✅ Read API key from environment variable (NOT hardcoded)
+    private final String COHERE_API_KEY = System.getenv("COHERE_API_KEY");
 
     public String analyzeResume(String resumeContent) {
         try {
@@ -21,17 +22,23 @@ public class GeminiService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Bearer " + COHERE_API_KEY);
 
-            String message = "Analyze this resume and provide:\n" +
-                             "1. Strengths (3-4 points)\n" +
-                             "2. Areas for improvement (3-4 points)\n" +
-                             "3. Overall score out of 100\n" +
-                             "4. Suggestions for improvement\n\n" +
+            String message = "You are an expert resume analyzer. Analyze the following resume and provide a detailed, structured response with clear sections. Use the exact format below:\n\n" +
+                             "=== STRENGTHS ===\n" +
+                             "List 4-5 specific strengths with brief explanations.\n\n" +
+                             "=== AREAS FOR IMPROVEMENT ===\n" +
+                             "List 4-5 specific areas that need improvement with brief explanations.\n\n" +
+                             "=== OVERALL SCORE ===\n" +
+                             "Provide a score out of 100 with a brief justification.\n\n" +
+                             "=== DETAILED SUGGESTIONS ===\n" +
+                             "Provide 4-5 specific, actionable suggestions to improve the resume.\n\n" +
+                             "=== KEY SKILLS IDENTIFIED ===\n" +
+                             "List all technical and soft skills found in the resume.\n\n" +
                              "Resume: " + resumeContent;
 
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", "command-r-08-2024");
             requestBody.put("message", message);
-            requestBody.put("max_tokens", 500);
+            requestBody.put("max_tokens", 800);
             requestBody.put("temperature", 0.7);
 
             HttpEntity<Map<String, Object>> entity = new HttpEntity<>(requestBody, headers);
@@ -52,11 +59,8 @@ public class GeminiService {
 
             return "No analysis generated. Please try again.";
 
-        } catch (ResourceAccessException e) {
-            System.err.println("❌ Network error: " + e.getMessage());
-            return "Network error: Unable to reach Cohere API. Please check your internet connection.";
         } catch (Exception e) {
-            System.err.println("❌ Error: " + e.getMessage());
+            e.printStackTrace();
             return "Error analyzing resume: " + e.getMessage();
         }
     }
