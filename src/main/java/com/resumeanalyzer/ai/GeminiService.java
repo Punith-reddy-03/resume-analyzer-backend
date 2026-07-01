@@ -9,8 +9,8 @@ import java.util.*;
 @Service
 public class GeminiService {
 
-    // ✅ Using Cohere API (Free, reliable, works on Render)
-    private final String COHERE_URL = "https://api.cohere.ai/v1/generate";
+    // ✅ Using Cohere Chat API (New version)
+    private final String COHERE_URL = "https://api.cohere.ai/v1/chat";
     private final String COHERE_API_KEY = "PVuiA9dqODLEgDAvjvqUDuB29Lw5Zn4E45o4QPLQ";
 
     public String analyzeResume(String resumeContent) {
@@ -21,16 +21,16 @@ public class GeminiService {
             headers.setContentType(MediaType.APPLICATION_JSON);
             headers.set("Authorization", "Bearer " + COHERE_API_KEY);
 
-            String prompt = "Analyze this resume and provide:\n" +
-                            "1. Strengths (3-4 points)\n" +
-                            "2. Areas for improvement (3-4 points)\n" +
-                            "3. Overall score out of 100\n" +
-                            "4. Suggestions for improvement\n\n" +
-                            "Resume: " + resumeContent;
+            String message = "Analyze this resume and provide:\n" +
+                             "1. Strengths (3-4 points)\n" +
+                             "2. Areas for improvement (3-4 points)\n" +
+                             "3. Overall score out of 100\n" +
+                             "4. Suggestions for improvement\n\n" +
+                             "Resume: " + resumeContent;
 
             Map<String, Object> requestBody = new HashMap<>();
             requestBody.put("model", "command-r-08-2024");
-            requestBody.put("prompt", prompt);
+            requestBody.put("message", message);
             requestBody.put("max_tokens", 500);
             requestBody.put("temperature", 0.7);
 
@@ -44,14 +44,10 @@ public class GeminiService {
             );
 
             Map responseBody = response.getBody();
-            if (responseBody != null && responseBody.containsKey("generations")) {
-                List generations = (List) responseBody.get("generations");
-                if (!generations.isEmpty()) {
-                    Map firstGen = (Map) generations.get(0);
-                    String text = (String) firstGen.get("text");
-                    System.out.println("✅ Analysis completed!");
-                    return text.trim();
-                }
+            if (responseBody != null && responseBody.containsKey("text")) {
+                String text = (String) responseBody.get("text");
+                System.out.println("✅ Analysis completed!");
+                return text.trim();
             }
 
             return "No analysis generated. Please try again.";
